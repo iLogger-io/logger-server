@@ -2,13 +2,13 @@
   "name": "logger-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development node index.js",
-    "prod": "cross-env NODE_ENV=production node index.js",
-    "devmon": "cross-env NODE_ENV=development nodemon index.js",
-    "prodmon": "cross-env NODE_ENV=production nodemon index.js",
-    "lint": "eslint --fix --ext .js,.jsx .",
+    "dev": "env-cmd -f .env.development nodemon --watch 'src/**/*.ts' --exec ts-node src/index.ts",
+    "staging": "env-cmd -f .env.staging ts-node src/index.ts",
+    "prod": "env-cmd -f .env.production ts-node src/index.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Li Nguyen",
@@ -17,6 +17,7 @@
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "cross-env": "^7.0.2",
+    "env-cmd": "^10.1.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "jsonwebtoken": "^8.5.1",
@@ -39,6 +40,9 @@
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1"
+    "eslint-plugin-standard": "^4.0.1",
+    "prettier": "^2.2.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3"
   }
 }

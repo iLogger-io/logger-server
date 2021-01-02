@@ -1,15 +1,18 @@
 module.exports = {
   env: {
     browser: true,
-    commonjs: true,
-    es2020: true
+    jest: true,
+    es6: true,
   },
-  extends: [
-    'standard'
-  ],
+  plugins: ["import"],
+  extends: "eslint:recommended",
   parserOptions: {
-    ecmaVersion: 11
+    ecmaVersion: 2018,
+    sourceType: "module",
   },
   rules: {
-  }
-}
+    "no-console": "warn",
+    "no-eval": "error",
+    "import/first": "error",
+  },
+};
