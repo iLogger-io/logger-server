@@ -5,7 +5,7 @@ const status = {
   DB_TABLE_NOT_EXIST: 2002,
   DB_SYNTAX_ERROR: 2003,
   DB_COL_NOT_EXIST: 2004,
-  TAB_DUPL_KEY: 2005
-}
+  TAB_DUPL_KEY: 2005,
+};
 
-module.exports = status
+export = status;

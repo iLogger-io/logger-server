@@ -1,0 +1,1 @@
+export const wssClientStorage: any = {};

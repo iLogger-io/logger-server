@@ -1,7 +1,7 @@
-const globalVar = require("../lib/globalVar");
-const wss = require("../../wss");
+import * as globalVar from "../lib/globalVar";
+import * as wss from "../wss";
 
-function sendBrowserDeviceid(deviceid, wssdata) {
+export function sendBrowserDeviceid(deviceid: any, wssdata: any) {
   for (const key in globalVar.wssClientStorage) {
     if (
       globalVar.wssClientStorage[key].token !== undefined &&
@@ -12,7 +12,7 @@ function sendBrowserDeviceid(deviceid, wssdata) {
   }
 }
 
-function sendBrowserEmail(email, wssdata) {
+export function sendBrowserEmail(email: any, wssdata: any) {
   for (const key in globalVar.wssClientStorage) {
     if (
       globalVar.wssClientStorage[key].token !== undefined &&
@@ -24,7 +24,7 @@ function sendBrowserEmail(email, wssdata) {
   }
 }
 
-function sendDevice(deviceid, wssdata) {
+export function sendDevice(deviceid: any, wssdata: any) {
   for (const key in globalVar.wssClientStorage) {
     if (
       globalVar.wssClientStorage[key].device !== undefined &&
@@ -34,7 +34,3 @@ function sendDevice(deviceid, wssdata) {
     }
   }
 }
-
-module.exports.sendBrowserDeviceid = sendBrowserDeviceid;
-module.exports.sendBrowserEmail = sendBrowserEmail;
-module.exports.sendDevice = sendDevice;

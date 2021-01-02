@@ -1,32 +1,34 @@
-const nodemailer = require('nodemailer')
-const config = require('../config/user.json')
+import nodemailer from "nodemailer";
 
-var transporter
+let transporter: any;
 
-function init () {
+export function init() {
   transporter = nodemailer.createTransport({
-    service: 'Yandex',
-    host: 'smtp.yandex.ru',
+    service: "Yandex",
+    host: "smtp.yandex.ru",
     port: 465,
-    auth: config.mailauth
-  })
+    auth: {
+      user: process.env.MAIL_AUTH_USER,
+      pass: process.env.MAIL_AUTH_PASS,
+    },
+  });
 }
 
-function send (to, subject, content) {
+export function send(to: string, subject: string, content: string) {
   var mailOptions = {
-    from: config.mailauth.user,
+    from: process.env.MAIL_AUTH_USER,
     to: to,
     subject: subject,
-    html: content
+    html: content,
     // html: '<p>You have got a new message</b><ul><li>Username:' + '</li><li>Email:' + '</li><li>Username:' + '</li></ul>'
-  }
-  transporter.sendMail(mailOptions, function (error, info) {
+  };
+  transporter.sendMail(mailOptions, function (error: any, info: any) {
     if (error) {
-      console.log(error)
+      console.log(error);
     } else {
-      console.log('Email sent: ' + info.response)
+      console.log("Email sent: " + info.response);
     }
-  })
+  });
 }
 
 // const message = {
@@ -41,6 +43,3 @@ function send (to, subject, content) {
 //     }
 //   ]
 // };
-
-module.exports.init = init
-module.exports.send = send

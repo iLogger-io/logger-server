@@ -1,15 +1,15 @@
-const express = require("express");
-const passport = require("passport");
+import express from "express";
+import passport from "passport";
+import { User } from "../lib/db";
+import status from "../lib/status";
+import * as encryption from "../lib/encryption";
+import * as mail from "../lib/mail";
+import * as jwttoken from "../lib/token";
+
 const router = express.Router();
-const { User } = require("../lib/db");
-const status = require("../lib/status");
-const encryption = require("../lib/encryption");
-const mail = require("../lib/mail");
-const config = require("../config/user.json");
-const jwttoken = require("../lib/token");
 
 router.post("/signup", async function (req, res) {
-  const checkuser = await User.findOne({ where: { email: req.body.email } });
+  const checkuser: any = await User.findOne({ where: { email: req.body.email } });
 
   if (checkuser !== null) {
     if (checkuser.emailVerified) {
@@ -23,7 +23,7 @@ router.post("/signup", async function (req, res) {
   }
 
   const emailVerifiedId = encryption.genid();
-  const user = new User();
+  const user: any = new User();
   user.username = req.body.username;
   user.email = req.body.email;
   user.password = req.body.password;
@@ -39,32 +39,25 @@ router.post("/signup", async function (req, res) {
   if (checkuser !== null && checkuser.emailVerified === false) {
     return res.json({
       status: status.UNKNOWN,
-      msg:
-        "Email already exists but has not been verified, please check your mailbox",
+      msg: "Email already exists but has not been verified, please check your mailbox",
     });
   } else {
     return res.json({
       status: status.SUCCESS,
-      msg:
-        "Signup successfully, please check your mailbox to verify your email",
+      msg: "Signup successfully, please check your mailbox to verify your email",
     });
   }
 });
 
 router.post("/login", function (req, res, next) {
-  passport.authenticate("local", { session: false }, function (
-    err,
-    user,
-    info
-  ) {
+  passport.authenticate("local", { session: false }, function (err, user, info) {
     if (err) {
       return next(err);
     }
     if (user.emailVerified === false) {
       return res.json({
         status: status.UNKNOWN,
-        msg:
-          "Email already exists but has not been verified, please check your mailbox",
+        msg: "Email already exists but has not been verified, please check your mailbox",
       });
     } else if (user) {
       user.token = jwttoken.generateJWT(user);
@@ -83,7 +76,7 @@ router.post("/login", function (req, res, next) {
 });
 
 router.post("/verifyemail", async function (req, res) {
-  const user = await User.findOne({
+  const user: any = await User.findOne({
     where: { emailVerifiedId: req.body.VerifyEmailId },
   });
 
@@ -110,4 +103,4 @@ router.post("/verifyemail", async function (req, res) {
   });
 });
 
-module.exports = router;
+export = router;
