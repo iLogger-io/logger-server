@@ -235,4 +235,4 @@ const wsrouter = function (parseMsg: any, ws: any) {
   }
 };
 
-module.exports = wsrouter;
+export = wsrouter;

@@ -13,7 +13,7 @@ router.post("/register", async function (req, res) {
   const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("Url", Url);
 
-  const token = jwttoken.verifyToken(req);
+  const token: any = jwttoken.verifyToken(req);
   if (token === null) {
     return res.json({
       status: status.UNKNOWN,
@@ -23,13 +23,13 @@ router.post("/register", async function (req, res) {
 
   const deviceid = encryption.genid();
 
-  var device = new Device();
+  var device: any = new Device();
   device.email = token.email;
   device.deviceid = deviceid;
   device.name = req.body.name;
 
   await device.save();
-  const notiRet = await notiController.save(token.email, notiController.type.USER, {
+  const notiRet: any = await notiController.save(token.email, notiController.type.USER, {
     msg: "Register device successfully",
   });
   notiController.push(notiRet.id, null);
@@ -102,7 +102,7 @@ router.get("/list", async function (req, res) {
   const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("Url", Url);
 
-  const token = jwttoken.verifyToken(req);
+  const token: any = jwttoken.verifyToken(req);
   if (token === null) {
     return res.json({
       status: status.UNKNOWN,
@@ -113,7 +113,7 @@ router.get("/list", async function (req, res) {
   Device.findAll({
     where: { email: token.email },
     order: [["createdAt", "ASC"]],
-  }).then(async (devices) => {
+  }).then(async (devices: any[]) => {
     const devicelists = [];
     for (let i = 0; i < devices.length; i++) {
       devicelists.push({
@@ -155,7 +155,7 @@ router.post("/settings", async function (req, res) {
   const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
 
   if (encryption.validateid(DeviceidDecrypted)) {
-    const device = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
+    const device: any = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
 
     if (ret.status !== status.SUCCESS) {
       return res.json(ret);
@@ -200,7 +200,7 @@ router.post("/savesettings", async function (req, res) {
   const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
 
   if (encryption.validateid(DeviceidDecrypted)) {
-    const device = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
+    const device: any = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
 
     if (ret.status !== status.SUCCESS) {
       return res.json(ret);
@@ -250,20 +250,7 @@ router.post("/sendcommand", async function (req, res) {
     return res.json(ret);
   }
 
-  let device;
-  await Device.findOne({ deviceid: DeviceidDecrypted }, async function (err, _device) {
-    if (err) {
-      console.log(err.code);
-      ret = {
-        status: status.UNKNOWN,
-        msg: err.message,
-      };
-      return ret;
-    }
-
-    device = _device;
-    return device;
-  });
+  let device = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
 
   if (ret.status !== status.SUCCESS) {
     console.log(ret);
@@ -320,20 +307,7 @@ router.post("/sendcommandline", async function (req, res) {
     return res.json(ret);
   }
 
-  let device;
-  await Device.findOne({ deviceid: DeviceidDecrypted }, async function (err, _device) {
-    if (err) {
-      console.log(err.code);
-      ret = {
-        status: status.UNKNOWN,
-        msg: err.message,
-      };
-      return ret;
-    }
-
-    device = _device;
-    return device;
-  });
+  let device = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
 
   if (ret.status !== status.SUCCESS) {
     console.log(ret);
@@ -362,4 +336,4 @@ router.post("/sendcommandline", async function (req, res) {
   });
 });
 
-module.exports = router;
+export = router;

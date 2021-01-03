@@ -32,7 +32,7 @@ router.post("/signup", async function (req, res) {
   await user.save();
   const content = `
   <h2 style="color: #2e6c80;">Click on this link to verify your email:</h2>
-  <p><strong>&nbsp;<a href="https://${config.domain}/verifyemail?id=${emailVerifiedId}">https://${config.domain}/verifyemail?id=${emailVerifiedId}</a></strong></p>
+  <p><strong>&nbsp;<a href="https://${process.env.HOST}/verifyemail?id=${emailVerifiedId}">https://${process.env.HOST}/verifyemail?id=${emailVerifiedId}</a></strong></p>
     `;
   mail.send(req.body.email, "iLogger Email Verification Code", content);
 
