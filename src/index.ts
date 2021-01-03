@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
-import passport from "./passport/setup";
 
+import logger from "./utils/logger";
+import passport from "./passport/setup";
 import authApi from "./api/auth";
 import loggerApi from "./api/logger";
 import deviceApi from "./api/device";
@@ -23,8 +24,9 @@ app.use(process.env.API_PATH + "/logger", loggerApi);
 app.use(process.env.API_PATH + "/device", deviceApi);
 
 mail.init();
+
 const server = app.listen(process.env.PORT, () =>
-  console.log(`Server listening at http://${process.env.HOST}:${process.env.PORT}`),
+  logger.info(`Server listening at http://${process.env.HOST}:${process.env.PORT}`),
 );
 wss.init(server);
 
