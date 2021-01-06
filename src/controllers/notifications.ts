@@ -1,5 +1,5 @@
-import status from "../lib/status";
-import { Notification } from "../lib/db";
+import status from "../constants/status";
+import { Notification } from "../models/db";
 import * as wssSendMessage from "./wssSendMessage";
 
 export const type = {

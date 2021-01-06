@@ -1,3 +1,13 @@
+import { v4 as uuidv4, validate } from "uuid";
+
+export function genid(): string {
+  return uuidv4();
+}
+
+export function validateid(uuid: string): boolean {
+  return validate(uuid);
+}
+
 export function msleep(ms: number) {
   return new Promise((resolve, reject) => {
     if (isNaN(ms) || ms < 0) {

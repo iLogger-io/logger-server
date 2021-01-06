@@ -1,12 +1,12 @@
-import * as encryption from "../lib/encryption";
-import status from "../lib/status";
-import { msleep } from "../lib/helper";
-import { Device } from "../lib/db";
-import Log from "../models/Logs";
+import * as crypto from "../lib/crypto";
+import status from "../constants/status";
+import { msleep } from "../utils/helper";
+import { Device, Log } from "../models/db";
 import * as wssSendMessage from "../controllers/wssSendMessage";
 import * as globalVar from "../lib/globalVar";
 import * as notiController from "../controllers/notifications";
-import * as mail from "../lib/mail";
+import * as mail from "../utils/mail";
+import { validateid } from "../utils/helper";
 
 function EventChecking(log: any, TriggerEventSettings: any) {
   for (const key in TriggerEventSettings) {
@@ -88,7 +88,7 @@ async function DeviceSendData(parseMsg: any, ws: any) {
 
   var DeviceidDecrypted;
   try {
-    DeviceidDecrypted = await encryption.decrypt(parseMsg.deviceid);
+    DeviceidDecrypted = await crypto.decrypt(parseMsg.deviceid);
   } catch {
     ret = {
       status: status.UNKNOWN,
@@ -193,12 +193,12 @@ async function DeviceSendData(parseMsg: any, ws: any) {
 }
 
 async function registerDevice(deviceid: any, ws: any) {
-  const DeviceidDecrypted = await encryption.decrypt(deviceid);
+  const DeviceidDecrypted = await crypto.decrypt(deviceid);
   var ret = {
     status: status.SUCCESS,
     msg: "OK",
   };
-  if (encryption.validateid(DeviceidDecrypted)) {
+  if (validateid(DeviceidDecrypted)) {
     const device = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
 
     if (device === null) {

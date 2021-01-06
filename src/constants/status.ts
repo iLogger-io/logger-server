@@ -1,0 +1,24 @@
+const status = {
+  SUCCESS: 0,
+  ERROR: 1,
+
+  /* Common */
+  UNKNOWN: 1001,
+
+  /* Database */
+  DB_TABLE_EXIST: 2001,
+  DB_TABLE_NOT_EXIST: 2002,
+  DB_SYNTAX_ERROR: 2003,
+  DB_COL_NOT_EXIST: 2004,
+  TAB_DUPL_KEY: 2005,
+
+  /* Passport */
+  GG_OAUTH_FAILED: 3001,
+  PASS_NOT_MATCHED: 3002,
+  EMAIL_ALREADY_EXISTS: 3003,
+  LOGIN_FAILED: 3004,
+  EMAIL_NOT_VERIFIED: 3005,
+  EMAIL_INVALID: 3006,
+};
+
+export = status;

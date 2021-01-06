@@ -3,12 +3,23 @@ import { Sequelize, DataTypes } from "sequelize";
 
 export = (sequelize: Sequelize) => {
   var User = sequelize.define("users", {
-    username: {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    displayName: {
+      type: DataTypes.STRING(36),
+    },
+    givenName: {
+      type: DataTypes.STRING(36),
+    },
+    familyName: {
       type: DataTypes.STRING(36),
     },
     email: {
       type: DataTypes.STRING(254),
-      primaryKey: true,
+      unique: true,
     },
     emailVerified: {
       type: DataTypes.BOOLEAN,

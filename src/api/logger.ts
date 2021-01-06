@@ -1,11 +1,10 @@
 import express from "express";
-import { Device } from "../lib/db";
-import Log from "../models/Logs";
-import status from "../lib/status";
-import * as encryption from "../lib/encryption";
-import * as jwttoken from "../lib/token";
+import { Device, Log } from "../models/db";
+import status from "../constants/status";
+import * as crypto from "../lib/crypto";
+import * as jwt from "../lib/jwt";
 import * as globalVar from "../lib/globalVar";
-import { msleep } from "../lib/helper";
+import { msleep, validateid } from "../utils/helper";
 import * as wss from "../wss";
 
 const router = express.Router();
@@ -46,7 +45,7 @@ router.post("/data", async function (req: any, res) {
 
   let DeviceidDecrypted: any;
   try {
-    DeviceidDecrypted = await encryption.decrypt(deviceid);
+    DeviceidDecrypted = await crypto.decrypt(deviceid);
   } catch {
     ret = {
       status: status.UNKNOWN,
@@ -114,7 +113,7 @@ router.post("/getlog", async function (req, res) {
   const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("Url", Url);
 
-  const token = jwttoken.verifyToken(req);
+  const token = jwt.verifyToken(req);
   if (token === null) {
     return res.json({
       status: status.UNKNOWN,
@@ -129,7 +128,7 @@ router.post("/getlog", async function (req, res) {
     });
   }
 
-  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+  const DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
   const FindOptions: any = {
     deviceid: DeviceidDecrypted,
   };
@@ -142,7 +141,7 @@ router.post("/getlog", async function (req, res) {
     FindOptions._id = { $lt: req.body.lt };
   }
 
-  if (encryption.validateid(DeviceidDecrypted)) {
+  if (validateid(DeviceidDecrypted)) {
     Log.find(FindOptions, async function (err, logs: any) {
       if (err) {
         console.log(err.code);

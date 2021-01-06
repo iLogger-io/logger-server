@@ -1,11 +1,11 @@
 import express from "express";
 const router = express.Router();
-import status from "../lib/status";
-import { Device } from "../lib/db";
-import Log from "../models/Logs";
+import status from "../constants/status";
+import { Device, Log } from "../models/db";
 
-import * as jwttoken from "../lib/token";
-import * as encryption from "../lib/encryption";
+import * as jwt from "../lib/jwt";
+import * as crypto from "../lib/crypto";
+import { genid, validateid } from "../utils/helper";
 import * as notiController from "../controllers/notifications";
 import * as wssSendMessage from "../controllers/wssSendMessage";
 
@@ -13,7 +13,7 @@ router.post("/register", async function (req, res) {
   const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("Url", Url);
 
-  const token: any = jwttoken.verifyToken(req);
+  const token: any = jwt.verifyToken(req);
   if (token === null) {
     return res.json({
       status: status.UNKNOWN,
@@ -21,7 +21,7 @@ router.post("/register", async function (req, res) {
     });
   }
 
-  const deviceid = encryption.genid();
+  const deviceid = genid();
 
   var device: any = new Device();
   device.email = token.email;
@@ -36,7 +36,7 @@ router.post("/register", async function (req, res) {
   return res.json({
     status: status.SUCCESS,
     msg: "Register device successfully",
-    deviceid: await encryption.encrypt(device.deviceid),
+    deviceid: await crypto.encrypt(device.deviceid),
   });
 });
 
@@ -49,7 +49,7 @@ router.post("/remove", async function (req, res) {
     msg: "OK",
   };
 
-  const token = jwttoken.verifyToken(req);
+  const token = jwt.verifyToken(req);
   if (token === null) {
     return res.json({
       status: status.UNKNOWN,
@@ -63,9 +63,9 @@ router.post("/remove", async function (req, res) {
       msg: "Wrong device id",
     });
   }
-  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+  const DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
 
-  if (encryption.validateid(DeviceidDecrypted)) {
+  if (validateid(DeviceidDecrypted)) {
     await Device.destroy({ where: { deviceid: DeviceidDecrypted } });
 
     if (ret.status !== status.SUCCESS) {
@@ -102,7 +102,7 @@ router.get("/list", async function (req, res) {
   const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("Url", Url);
 
-  const token: any = jwttoken.verifyToken(req);
+  const token: any = jwt.verifyToken(req);
   if (token === null) {
     return res.json({
       status: status.UNKNOWN,
@@ -118,7 +118,7 @@ router.get("/list", async function (req, res) {
     for (let i = 0; i < devices.length; i++) {
       devicelists.push({
         name: devices[i].name,
-        id: await encryption.encrypt(devices[i].deviceid),
+        id: await crypto.encrypt(devices[i].deviceid),
       });
     }
     return res.json({
@@ -138,7 +138,7 @@ router.post("/settings", async function (req, res) {
     msg: "OK",
   };
 
-  const token = jwttoken.verifyToken(req);
+  const token = jwt.verifyToken(req);
   if (token === null) {
     return res.json({
       status: status.UNKNOWN,
@@ -152,9 +152,9 @@ router.post("/settings", async function (req, res) {
       msg: "Wrong device id",
     });
   }
-  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+  const DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
 
-  if (encryption.validateid(DeviceidDecrypted)) {
+  if (validateid(DeviceidDecrypted)) {
     const device: any = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
 
     if (ret.status !== status.SUCCESS) {
@@ -183,7 +183,7 @@ router.post("/savesettings", async function (req, res) {
     msg: "OK",
   };
 
-  const token = jwttoken.verifyToken(req);
+  const token = jwt.verifyToken(req);
   if (token === null) {
     return res.json({
       status: status.UNKNOWN,
@@ -197,9 +197,9 @@ router.post("/savesettings", async function (req, res) {
       msg: "Wrong device id",
     });
   }
-  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+  const DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
 
-  if (encryption.validateid(DeviceidDecrypted)) {
+  if (validateid(DeviceidDecrypted)) {
     const device: any = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
 
     if (ret.status !== status.SUCCESS) {
@@ -230,7 +230,7 @@ router.post("/sendcommand", async function (req, res) {
     msg: "OK",
   };
 
-  const token = jwttoken.verifyToken(req);
+  const token = jwt.verifyToken(req);
   if (token === null) {
     return res.json({
       status: status.UNKNOWN,
@@ -240,7 +240,7 @@ router.post("/sendcommand", async function (req, res) {
 
   var DeviceidDecrypted;
   try {
-    DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+    DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
   } catch {
     ret = {
       status: status.UNKNOWN,
@@ -287,7 +287,7 @@ router.post("/sendcommandline", async function (req, res) {
     msg: "OK",
   };
 
-  const token = jwttoken.verifyToken(req);
+  const token = jwt.verifyToken(req);
   if (token === null) {
     return res.json({
       status: status.UNKNOWN,
@@ -297,7 +297,7 @@ router.post("/sendcommandline", async function (req, res) {
 
   var DeviceidDecrypted;
   try {
-    DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+    DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
   } catch {
     ret = {
       status: status.UNKNOWN,

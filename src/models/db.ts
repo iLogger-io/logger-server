@@ -1,7 +1,16 @@
 import { Sequelize } from "sequelize";
-import UserModel from "../models/Users";
-import DeviceModel from "../models/Devices";
-import NotificationModel from "../models/Notifications";
+import mongoose from "mongoose";
+import UserModel from "./User";
+import DeviceModel from "./Device";
+import NotificationModel from "./Notification";
+
+mongoose.connect(
+  `mongodb://${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_NAME}`,
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  },
+);
 
 const sequelize = new Sequelize(
   process.env.DB_NAME!,
@@ -14,13 +23,17 @@ const sequelize = new Sequelize(
   },
 );
 
+/* Export models Postgres */
 export const User = UserModel(sequelize);
 export const Device = DeviceModel(sequelize);
 export const Notification = NotificationModel(sequelize);
 
+/* Export models MongoDB */
+export { Log } from "./Log";
+
 User.hasMany(Device, {
   foreignKey: {
-    name: "email",
+    name: "id",
     allowNull: false,
   },
   onDelete: "cascade",
@@ -29,7 +42,7 @@ User.hasMany(Device, {
 
 User.hasMany(Notification, {
   foreignKey: {
-    name: "email",
+    name: "id",
     allowNull: false,
   },
   onDelete: "cascade",

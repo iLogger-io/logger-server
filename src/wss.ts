@@ -1,13 +1,13 @@
 import WebSocket from "ws";
-import * as encryption from "./lib/encryption";
 import wssRoute from "./api/wssRoute";
 import * as globalVar from "./lib/globalVar";
-import * as convert from "./lib/convert";
+import * as convert from "./utils/convert";
+import { genid } from "./utils/helper";
 
 export const init = function (server: any) {
   const wss = new WebSocket.Server({ server });
   (wss as any).getUniqueID = function () {
-    return encryption.genid();
+    return genid();
   };
 
   wss.on("connection", function connection(ws: any) {

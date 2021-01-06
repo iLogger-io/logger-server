@@ -4,6 +4,11 @@ export = (sequelize: Sequelize) => {
   var Device = sequelize.define(
     "devices",
     {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
       email: {
         type: DataTypes.STRING(254),
       },

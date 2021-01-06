@@ -20,9 +20,9 @@ export function verifyToken(req: any) {
   return null;
 }
 
-export function validPassword(user: any, password: any) {
-  var hash = crypto.pbkdf2Sync(password, user.salt, 10000, 512, "sha512").toString("hex");
-  return user.password === hash;
+export function validPassword(salt: string, password: string, passwordEncrypted: string): boolean {
+  const hash = crypto.pbkdf2Sync(password, salt, 10000, 512, "sha512").toString("hex");
+  return passwordEncrypted === hash;
 }
 
 export function verifyTokenRaw(token: any) {
