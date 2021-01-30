@@ -3,7 +3,7 @@ import passportLocal from "passport-local";
 import passportGoogle from "passport-google-oauth2";
 import { User } from "../models/db";
 import logger from "../utils/logger";
-import * as jwt from "../lib/jwt";
+import * as encryption from "../lib/encryption";
 import status from "../constants/status";
 
 const LocalStrategy = passportLocal.Strategy;
@@ -33,7 +33,7 @@ passport.use(
         return done(null, false, {
           message: "Email already exists but has not been verified, please check your mailbox.",
         });
-      } else if (!jwt.validPassword(user.salt, password, user.password)) {
+      } else if (!encryption.validPassword(user.salt, password, user.password)) {
         return done(null, false, { code: status.PASS_NOT_MATCHED, msg: "Incorrect password." });
       }
       return done(null, user);

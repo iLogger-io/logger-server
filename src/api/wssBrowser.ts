@@ -1,14 +1,14 @@
 import * as crypto from "../lib/crypto";
-import * as jwt from "../lib/jwt";
+import * as jwt from "../lib/encryption";
 
 function verifytoken(_token: string | undefined | null, ws: any) {
-  if (_token === null || _token === undefined || _token === "") {
-    return;
-  }
-  const token: any = jwt.verifyTokenRaw(_token);
-  ws.token = token;
-  ws.email = token.email;
-  ws.deviceids = [];
+  // if (_token === null || _token === undefined || _token === "") {
+  //   return;
+  // }
+  // const token: any = jwt.verifyTokenRaw(_token);
+  // ws.token = token;
+  // ws.email = token.email;
+  // ws.deviceids = [];
 }
 
 async function registerDeviceID(deviceid: string, ws: any) {

@@ -1,9 +1,8 @@
 import express from "express";
 import { Device, Log } from "../models/db";
 import status from "../constants/status";
-import * as crypto from "../lib/crypto";
-import * as jwt from "../lib/jwt";
-import * as globalVar from "../lib/globalVar";
+import * as encryption from "../lib/encryption";
+import * as globalVar from "../lib/global_var";
 import { msleep, validateid } from "../utils/helper";
 import * as wss from "../wss";
 
@@ -45,7 +44,7 @@ router.post("/data", async function (req: any, res) {
 
   let DeviceidDecrypted: any;
   try {
-    DeviceidDecrypted = await crypto.decrypt(deviceid);
+    DeviceidDecrypted = await encryption.decrypt(deviceid);
   } catch {
     ret = {
       status: status.UNKNOWN,
@@ -113,11 +112,12 @@ router.post("/getlog", async function (req, res) {
   const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("Url", Url);
 
-  const token = jwt.verifyToken(req);
-  if (token === null) {
+  const payload = encryption.verifyToken(process.env.JWT_SECRET!, req);
+  if (payload === null) {
     return res.json({
-      status: status.UNKNOWN,
-      msg: "Token has expired",
+      status: status.ERROR,
+      msg: "Token decode error",
+      code: status.TOKEN_DECODE_ERROR,
     });
   }
 
@@ -128,7 +128,7 @@ router.post("/getlog", async function (req, res) {
     });
   }
 
-  const DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
+  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
   const FindOptions: any = {
     deviceid: DeviceidDecrypted,
   };

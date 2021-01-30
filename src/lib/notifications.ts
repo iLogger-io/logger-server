@@ -1,6 +1,6 @@
 import status from "../constants/status";
 import { Notification } from "../models/db";
-import * as wssSendMessage from "./wssSendMessage";
+import * as wssSendMessage from "./wss_send_message";
 
 export const type = {
   USER: 0,

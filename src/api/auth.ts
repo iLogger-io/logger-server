@@ -4,7 +4,7 @@ import { User } from "../models/db";
 import status from "../constants/status";
 import { genid } from "../utils/helper";
 import * as mail from "../utils/mail";
-import * as jwt from "../lib/jwt";
+import * as encryption from "../lib/encryption";
 import logger from "../utils/logger";
 
 const router = express.Router();
@@ -99,12 +99,22 @@ router.post("/login", function (req, res, next) {
         msg: "Email already exists but has not been verified, please check your mailbox",
       });
     } else if (user) {
-      let access_token = jwt.generateJWT(user);
+      const payload = {
+        id: user.id,
+        email: user.email,
+      };
+      const access_token = encryption.jwtEncode(payload, process.env.JWT_SECRET!, 60 * 60 * 24 * 7);
+      const refresh_token = encryption.jwtEncode(
+        payload,
+        process.env.JWT_SECRET!,
+        60 * 60 * 24 * 30,
+      );
       return res.json({
         status: status.SUCCESS,
         msg: "Login successfully",
         payload: {
           access_token: access_token,
+          refresh_token: refresh_token,
         },
       });
     } else if (user === null) {
@@ -136,15 +146,9 @@ router.get(
 );
 
 router.get("/google/success", async function (req: any, res: any) {
-  req.user.bio = null;
-  req.user.image = null;
-  req.user.jwt = jwt.toAuthJSON(req.user);
   return res.json({
     status: 0,
     msg: "Google login successfully",
-    data: {
-      user: req.user.jwt,
-    },
   });
 });
 

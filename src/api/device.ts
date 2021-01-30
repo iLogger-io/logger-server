@@ -3,40 +3,42 @@ const router = express.Router();
 import status from "../constants/status";
 import { Device, Log } from "../models/db";
 
-import * as jwt from "../lib/jwt";
-import * as crypto from "../lib/crypto";
+import * as encryption from "../lib/encryption";
+import logger from "../utils/logger";
 import { genid, validateid } from "../utils/helper";
-import * as notiController from "../controllers/notifications";
-import * as wssSendMessage from "../controllers/wssSendMessage";
+import * as notiController from "../lib/notifications";
+import * as wssSendMessage from "../lib/wss_send_message";
+import { ResStt } from "../types/index";
 
 router.post("/register", async function (req, res) {
   const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("Url", Url);
 
-  const token: any = jwt.verifyToken(req);
-  if (token === null) {
+  const payload = encryption.verifyToken(process.env.JWT_SECRET!, req);
+  if (payload === null) {
     return res.json({
-      status: status.UNKNOWN,
-      msg: "Token has expired",
+      status: status.ERROR,
+      msg: "Token decode error",
+      code: status.TOKEN_DECODE_ERROR,
     });
   }
 
   const deviceid = genid();
 
-  var device: any = new Device();
-  device.email = token.email;
+  const device: any = new Device();
+  device.email = payload.email;
   device.deviceid = deviceid;
   device.name = req.body.name;
 
   await device.save();
-  const notiRet: any = await notiController.save(token.email, notiController.type.USER, {
+  const notiRet: any = await notiController.save(payload.email, notiController.type.USER, {
     msg: "Register device successfully",
   });
   notiController.push(notiRet.id, null);
   return res.json({
     status: status.SUCCESS,
     msg: "Register device successfully",
-    deviceid: await crypto.encrypt(device.deviceid),
+    deviceid: await encryption.encrypt(device.deviceid),
   });
 });
 
@@ -49,11 +51,12 @@ router.post("/remove", async function (req, res) {
     msg: "OK",
   };
 
-  const token = jwt.verifyToken(req);
-  if (token === null) {
+  const payload = encryption.verifyToken(process.env.JWT_SECRET!, req);
+  if (payload === null) {
     return res.json({
-      status: status.UNKNOWN,
-      msg: "Token has expired",
+      status: status.ERROR,
+      msg: "Token decode error",
+      code: status.TOKEN_DECODE_ERROR,
     });
   }
 
@@ -63,7 +66,7 @@ router.post("/remove", async function (req, res) {
       msg: "Wrong device id",
     });
   }
-  const DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
+  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
 
   if (validateid(DeviceidDecrypted)) {
     await Device.destroy({ where: { deviceid: DeviceidDecrypted } });
@@ -102,31 +105,34 @@ router.get("/list", async function (req, res) {
   const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("Url", Url);
 
-  const token: any = jwt.verifyToken(req);
-  if (token === null) {
+  let resStt: ResStt = {
+    status: status.SUCCESS,
+    msg: "List device successfully",
+    payload: { list: [] },
+  };
+
+  const payload = encryption.verifyToken(process.env.JWT_SECRET!, req);
+  if (payload === null) {
     return res.json({
-      status: status.UNKNOWN,
-      msg: "Token has expired",
+      status: status.ERROR,
+      msg: "Token decode error",
+      code: status.TOKEN_DECODE_ERROR,
     });
   }
 
-  Device.findAll({
-    where: { email: token.email },
+  const devices: any = await Device.findAll({
+    where: { email: payload.email },
     order: [["createdAt", "ASC"]],
-  }).then(async (devices: any[]) => {
-    const devicelists = [];
-    for (let i = 0; i < devices.length; i++) {
-      devicelists.push({
-        name: devices[i].name,
-        id: await crypto.encrypt(devices[i].deviceid),
-      });
-    }
-    return res.json({
-      status: status.SUCCESS,
-      msg: "List device successfully",
-      list: devicelists,
-    });
   });
+
+  for (let i in devices) {
+    resStt.payload.list.push({
+      name: devices[i].name,
+      id: await encryption.encrypt(devices[i].deviceid),
+    });
+  }
+
+  return res.json(resStt);
 });
 
 router.post("/settings", async function (req, res) {
@@ -138,11 +144,12 @@ router.post("/settings", async function (req, res) {
     msg: "OK",
   };
 
-  const token = jwt.verifyToken(req);
-  if (token === null) {
+  const payload = encryption.verifyToken(process.env.JWT_SECRET!, req);
+  if (payload === null) {
     return res.json({
-      status: status.UNKNOWN,
-      msg: "Token has expired",
+      status: status.ERROR,
+      msg: "Token decode error",
+      code: status.TOKEN_DECODE_ERROR,
     });
   }
 
@@ -152,7 +159,7 @@ router.post("/settings", async function (req, res) {
       msg: "Wrong device id",
     });
   }
-  const DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
+  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
 
   if (validateid(DeviceidDecrypted)) {
     const device: any = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
@@ -183,11 +190,12 @@ router.post("/savesettings", async function (req, res) {
     msg: "OK",
   };
 
-  const token = jwt.verifyToken(req);
-  if (token === null) {
+  const payload = encryption.verifyToken(process.env.JWT_SECRET!, req);
+  if (payload === null) {
     return res.json({
-      status: status.UNKNOWN,
-      msg: "Token has expired",
+      status: status.ERROR,
+      msg: "Token decode error",
+      code: status.TOKEN_DECODE_ERROR,
     });
   }
 
@@ -197,7 +205,7 @@ router.post("/savesettings", async function (req, res) {
       msg: "Wrong device id",
     });
   }
-  const DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
+  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
 
   if (validateid(DeviceidDecrypted)) {
     const device: any = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
@@ -230,17 +238,18 @@ router.post("/sendcommand", async function (req, res) {
     msg: "OK",
   };
 
-  const token = jwt.verifyToken(req);
-  if (token === null) {
+  const payload = encryption.verifyToken(process.env.JWT_SECRET!, req);
+  if (payload === null) {
     return res.json({
-      status: status.UNKNOWN,
-      msg: "Token has expired",
+      status: status.ERROR,
+      msg: "Token decode error",
+      code: status.TOKEN_DECODE_ERROR,
     });
   }
 
   var DeviceidDecrypted;
   try {
-    DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
+    DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
   } catch {
     ret = {
       status: status.UNKNOWN,
@@ -287,17 +296,18 @@ router.post("/sendcommandline", async function (req, res) {
     msg: "OK",
   };
 
-  const token = jwt.verifyToken(req);
-  if (token === null) {
+  const payload = encryption.verifyToken(process.env.JWT_SECRET!, req);
+  if (payload === null) {
     return res.json({
-      status: status.UNKNOWN,
-      msg: "Token has expired",
+      status: status.ERROR,
+      msg: "Token decode error",
+      code: status.TOKEN_DECODE_ERROR,
     });
   }
 
   var DeviceidDecrypted;
   try {
-    DeviceidDecrypted = await crypto.decrypt(req.body.deviceid);
+    DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
   } catch {
     ret = {
       status: status.UNKNOWN,

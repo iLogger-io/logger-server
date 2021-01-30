@@ -2,9 +2,9 @@ import * as crypto from "../lib/crypto";
 import status from "../constants/status";
 import { msleep } from "../utils/helper";
 import { Device, Log } from "../models/db";
-import * as wssSendMessage from "../controllers/wssSendMessage";
+import * as wssSendMessage from "../lib/wss_send_message";
 import * as globalVar from "../lib/globalVar";
-import * as notiController from "../controllers/notifications";
+import * as notiController from "../lib/notifications";
 import * as mail from "../utils/mail";
 import { validateid } from "../utils/helper";
 

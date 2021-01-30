@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 let LogsSchema: any = new mongoose.Schema(
   {
-    deviceid: {
+    client_id: {
       type: String,
       required: true,
     },
