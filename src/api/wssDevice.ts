@@ -1,7 +1,7 @@
 import * as crypto from "../lib/crypto";
 import status from "../constants/status";
 import { msleep } from "../utils/helper";
-import { Device, Log } from "../models/db";
+import { Client, Log } from "../models/db";
 import * as wssSendMessage from "../lib/wss_send_message";
 import * as globalVar from "../lib/globalVar";
 import * as notiController from "../lib/notifications";
@@ -49,7 +49,7 @@ function EventChecking(log: any, TriggerEventSettings: any) {
   return false;
 }
 
-async function DeviceSendData(parseMsg: any, ws: any) {
+async function ClientSendData(parseMsg: any, ws: any) {
   console.log("Path", parseMsg.path);
 
   var ret = {
@@ -86,35 +86,35 @@ async function DeviceSendData(parseMsg: any, ws: any) {
     return;
   }
 
-  var DeviceidDecrypted;
+  var ClientidDecrypted;
   try {
-    DeviceidDecrypted = await crypto.decrypt(parseMsg.deviceid);
+    ClientidDecrypted = await crypto.decrypt(parseMsg.clientid);
   } catch {
     ret = {
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     };
     console.log(ret);
     return;
   }
 
-  const device: any = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
+  const client: any = await Client.findOne({ where: { clientid: ClientidDecrypted } });
 
   if (ret.status !== status.SUCCESS) {
     console.log(ret);
     return;
   }
 
-  if (device === null) {
+  if (client === null) {
     ret = {
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     };
     console.log(ret);
     return;
   }
 
-  const DeviceSettings = JSON.parse(device.settings);
+  const ClientSettings = JSON.parse(client.settings);
   let checkSaveLog = false;
   for (const i in logs) {
     if (logs[i].length === 0) {
@@ -123,7 +123,7 @@ async function DeviceSendData(parseMsg: any, ws: any) {
 
     checkSaveLog = true;
     var log: any = new Log();
-    log.deviceid = device.deviceid;
+    log.clientid = client.clientid;
     log.log = logs[i];
     await log.save(async function (err: any, _log: any) {
       if (err) {
@@ -139,7 +139,7 @@ async function DeviceSendData(parseMsg: any, ws: any) {
       return;
     }
 
-    const TriggerEvents = EventChecking(logs[i], DeviceSettings.TriggerEvents);
+    const TriggerEvents = EventChecking(logs[i], ClientSettings.TriggerEvents);
     if (TriggerEvents !== false) {
       let type;
       switch (TriggerEvents.Event) {
@@ -156,20 +156,20 @@ async function DeviceSendData(parseMsg: any, ws: any) {
           type = notiController.type.REGEX;
           break;
       }
-      const notiRet: any = await notiController.save(device.email, type, {
+      const notiRet: any = await notiController.save(client.email, type, {
         msg: `Found ${TriggerEvents.Event}`,
         data: logs[i],
       });
-      notiController.push(notiRet.id, parseMsg.deviceid);
-      if (DeviceSettings.PushNotifications.Email) {
+      notiController.push(notiRet.id, parseMsg.clientid);
+      if (ClientSettings.PushNotifications.Email) {
         const content = `
         <h2 style="padding-left: 30px;">Found&nbsp; ${TriggerEvents.Event}</h2>
         <ul>
-        <li>Device id: ${parseMsg.deviceid}</li>
+        <li>Client id: ${parseMsg.clientid}</li>
         <li>log: ${log.log}</li>
         <li>datetime: ${log.createdAt}</li>
         </ul>`;
-        mail.send(device.email, "iLogger Notifications", content);
+        mail.send(client.email, "iLogger Notifications", content);
       }
     }
     await msleep(2);
@@ -180,9 +180,9 @@ async function DeviceSendData(parseMsg: any, ws: any) {
       db: "logs",
       // _id: log._id,
       // createdAt: log.createdAt,
-      deviceid: parseMsg.deviceid,
+      clientid: parseMsg.clientid,
     };
-    wssSendMessage.sendBrowserDeviceid(DeviceidDecrypted, newupdate);
+    wssSendMessage.sendBrowserClientid(ClientidDecrypted, newupdate);
     ret = {
       status: status.SUCCESS,
       msg: "Push log successfully",
@@ -192,45 +192,45 @@ async function DeviceSendData(parseMsg: any, ws: any) {
   }
 }
 
-async function registerDevice(deviceid: any, ws: any) {
-  const DeviceidDecrypted = await crypto.decrypt(deviceid);
+async function registerClient(clientid: any, ws: any) {
+  const ClientidDecrypted = await crypto.decrypt(clientid);
   var ret = {
     status: status.SUCCESS,
     msg: "OK",
   };
-  if (validateid(DeviceidDecrypted)) {
-    const device = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
+  if (validateid(ClientidDecrypted)) {
+    const client = await Client.findOne({ where: { clientid: ClientidDecrypted } });
 
-    if (device === null) {
+    if (client === null) {
       ret = {
         status: status.UNKNOWN,
-        msg: "Wrong device id",
+        msg: "Wrong client id",
       };
       delete globalVar.wssClientStorage[ws.id];
       ws.terminate();
       return console.log(ret);
     }
 
-    ws.device = deviceid;
+    ws.client = clientid;
 
     return console.log({
       status: status.SUCCESS,
-      msg: "Register device successfully",
+      msg: "Register client successfully",
     });
   }
 }
 
 const wsrouter = function (parseMsg: any, ws: any) {
   switch (parseMsg.path) {
-    case "/DeviceSendData":
+    case "/ClientSendData":
       ws.dataBuf = parseMsg.data;
-      DeviceSendData(parseMsg, ws);
+      ClientSendData(parseMsg, ws);
       break;
-    case "/DeviceSendDataIoT":
-      DeviceSendData(parseMsg, ws);
+    case "/ClientSendDataIoT":
+      ClientSendData(parseMsg, ws);
       break;
-    case "/registerDevice":
-      registerDevice(parseMsg.deviceid, ws);
+    case "/registerClient":
+      registerClient(parseMsg.clientid, ws);
       break;
   }
 };

@@ -8,7 +8,7 @@ import logger from "./utils/logger";
 import passport from "./passport/setup";
 import authApi from "./api/auth";
 import loggerApi from "./api/logger";
-import deviceApi from "./api/device";
+import clientApi from "./api/client";
 import * as wss from "./wss";
 import * as mail from "./utils/mail";
 
@@ -33,7 +33,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(process.env.API_PATH + "/auth", authApi);
 app.use(process.env.API_PATH + "/logger", loggerApi);
-app.use(process.env.API_PATH + "/device", deviceApi);
+app.use(process.env.API_PATH + "/client", clientApi);
 
 mail.init();
 

@@ -1,16 +1,16 @@
 import wssBrowser from "./wssBrowser";
-import wssDevice from "./wssDevice";
+import wssClient from "./wssClient";
 
 const wsrouter = function (parseMsg: any, ws: any) {
   console.log(parseMsg);
-  if (parseMsg.path === "/token" || parseMsg.path === "/registerDeviceID") {
+  if (parseMsg.path === "/token" || parseMsg.path === "/registerClientID") {
     wssBrowser(parseMsg, ws);
   } else if (
-    parseMsg.path === "/DeviceSendData" ||
-    parseMsg.path === "/DeviceSendDataIoT" ||
-    parseMsg.path === "/registerDevice"
+    parseMsg.path === "/ClientSendData" ||
+    parseMsg.path === "/ClientSendDataIoT" ||
+    parseMsg.path === "/registerClient"
   ) {
-    wssDevice(parseMsg, ws);
+    wssClient(parseMsg, ws);
   }
 };
 

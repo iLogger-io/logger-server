@@ -33,7 +33,7 @@ export function save(email: any, type: any, data: any) {
   });
 }
 
-export async function push(id: any, deviceid: any) {
+export async function push(id: any, clientid: any) {
   let ret = {
     status: status.SUCCESS,
     msg: "OK",
@@ -47,11 +47,11 @@ export async function push(id: any, deviceid: any) {
     console.log(ret);
     return ret;
   }
-  const wssdata = {
+  const wssData = {
     command: "pushNotification",
     messages: JSON.parse(notification.messages),
-    deviceid: deviceid,
+    clientid: clientid,
   };
-  wssSendMessage.sendBrowserEmail(notification.email, wssdata);
+  wssSendMessage.SendBrowserWithEmail(notification.email, wssData);
   return ret;
 }

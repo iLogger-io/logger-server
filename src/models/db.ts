@@ -1,7 +1,7 @@
 import { Sequelize } from "sequelize";
 import mongoose from "mongoose";
 import UserModel from "./User";
-import DeviceModel from "./Device";
+import ClientModel from "./Client";
 import NotificationModel from "./Notification";
 
 mongoose.connect(
@@ -25,13 +25,13 @@ const sequelize = new Sequelize(
 
 /* Export models Postgres */
 export const User = UserModel(sequelize);
-export const Device = DeviceModel(sequelize);
+export const Client = ClientModel(sequelize);
 export const Notification = NotificationModel(sequelize);
 
 /* Export models MongoDB */
 export { Log } from "./Log";
 
-User.hasMany(Device, {
+User.hasMany(Client, {
   foreignKey: {
     name: "id",
     allowNull: false,

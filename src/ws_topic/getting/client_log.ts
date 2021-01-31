@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import logger from "../../utils/logger";
-import { Device, Log } from "../../models/db";
+import { Client, Log } from "../../models/db";
 import * as notiController from "../../lib/notifications";
 import status from "../../constants/status";
 import { msleep } from "../../utils/helper";
@@ -93,11 +93,11 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
     return;
   }
 
-  const device: any = await Device.findOne({ where: { deviceid: (ws as any).clientId } });
-  const DeviceSettings = JSON.parse(device.settings);
+  const client: any = await Client.findOne({ where: { clientid: (ws as any).clientId } });
+  const ClientSettings = JSON.parse(client.settings);
   for (let i in logs) {
     var log: any = new Log();
-    log.client_id = device.deviceid;
+    log.client_id = client.clientid;
     log.log = logs[i];
     await log.save(async function (err: any, _log: any) {
       if (err) {
@@ -114,7 +114,7 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
       return;
     }
 
-    const TriggerEvents = EventChecking(logs[i], DeviceSettings.TriggerEvents);
+    const TriggerEvents = EventChecking(logs[i], ClientSettings.TriggerEvents);
     if (TriggerEvents !== false) {
       let type;
       switch (TriggerEvents.Event) {
@@ -131,12 +131,12 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
           type = notiController.type.REGEX;
           break;
       }
-      const notiRet: any = await notiController.save(device.email, type, {
+      const notiRet: any = await notiController.save(client.email, type, {
         msg: `Found ${TriggerEvents.Event}`,
         data: logs[i],
       });
       notiController.push(notiRet.id, (ws as any).clientId);
-      if (DeviceSettings.PushNotifications.Email) {
+      if (ClientSettings.PushNotifications.Email) {
         const content = `
         <h2 style="padding-left: 30px;">Found&nbsp; ${TriggerEvents.Event}</h2>
         <ul>
@@ -144,20 +144,23 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
         <li>log: ${log.log}</li>
         <li>datetime: ${log.createdAt}</li>
         </ul>`;
-        // mail.send(device.email, "iLogger Notifications", content);
+        logger.warn("iLogger Notifications");
+        logger.warn(TriggerEvents.Event);
+        // mail.send(client.email, "iLogger Notifications", content);
       }
     }
     await msleep(2);
   }
-  const WssData: WSDataType = {
+  const wssData: WSDataType = {
     topic: "pushlog",
     payload: {
       logId: log._id,
-      createdAt: log.createdAt,
       ClientId: (ws as any).clientId,
     },
   };
-  WssSendMessage.sendBrowserClientId((ws as any).clientId, WssData);
+
+  WssSendMessage.SendBrowserWithEmail(client.email, wssData);
+
   ret = {
     status: status.SUCCESS,
     msg: "Push log successfully",

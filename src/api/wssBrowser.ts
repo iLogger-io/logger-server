@@ -8,13 +8,13 @@ function verifytoken(_token: string | undefined | null, ws: any) {
   // const token: any = jwt.verifyTokenRaw(_token);
   // ws.token = token;
   // ws.email = token.email;
-  // ws.deviceids = [];
+  // ws.clientids = [];
 }
 
-async function registerDeviceID(deviceid: string, ws: any) {
-  const DeviceidDecrypted = await crypto.decrypt(deviceid);
-  if (!ws.deviceids.includes(DeviceidDecrypted)) {
-    ws.deviceids.push(DeviceidDecrypted);
+async function registerClientID(clientid: string, ws: any) {
+  const ClientidDecrypted = await crypto.decrypt(clientid);
+  if (!ws.clientids.includes(ClientidDecrypted)) {
+    ws.clientids.push(ClientidDecrypted);
   }
 }
 
@@ -28,8 +28,8 @@ const wsrouter = function (parseMsg: any, ws: any) {
       verifytoken(parseMsg.token, ws);
       break;
 
-    case "/registerDeviceID":
-      registerDeviceID(parseMsg.deviceid, ws);
+    case "/registerClientID":
+      registerClientID(parseMsg.clientid, ws);
       break;
   }
 };

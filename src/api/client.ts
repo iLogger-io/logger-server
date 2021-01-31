@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import status from "../constants/status";
-import { Device, Log } from "../models/db";
+import { Client, Log } from "../models/db";
 
 import * as encryption from "../lib/encryption";
 import logger from "../utils/logger";
@@ -23,22 +23,22 @@ router.post("/register", async function (req, res) {
     });
   }
 
-  const deviceid = genid();
+  const clientid = genid();
 
-  const device: any = new Device();
-  device.email = payload.email;
-  device.deviceid = deviceid;
-  device.name = req.body.name;
+  const client: any = new Client();
+  client.email = payload.email;
+  client.clientid = clientid;
+  client.name = req.body.name;
 
-  await device.save();
+  await client.save();
   const notiRet: any = await notiController.save(payload.email, notiController.type.USER, {
-    msg: "Register device successfully",
+    msg: "Register client successfully",
   });
   notiController.push(notiRet.id, null);
   return res.json({
     status: status.SUCCESS,
-    msg: "Register device successfully",
-    deviceid: await encryption.encrypt(device.deviceid),
+    msg: "Register client successfully",
+    clientid: await encryption.encrypt(client.clientid),
   });
 });
 
@@ -60,22 +60,22 @@ router.post("/remove", async function (req, res) {
     });
   }
 
-  if (req.body.deviceid === "" || req.body.deviceid === undefined || req.body.deviceid === null) {
+  if (req.body.clientid === "" || req.body.clientid === undefined || req.body.clientid === null) {
     return res.json({
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     });
   }
-  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+  const ClientidDecrypted = await encryption.decrypt(req.body.clientid);
 
-  if (validateid(DeviceidDecrypted)) {
-    await Device.destroy({ where: { deviceid: DeviceidDecrypted } });
+  if (validateid(ClientidDecrypted)) {
+    await Client.destroy({ where: { clientid: ClientidDecrypted } });
 
     if (ret.status !== status.SUCCESS) {
       return res.json(ret);
     }
 
-    await Log.deleteMany({ deviceid: DeviceidDecrypted }, function (err) {
+    await Log.deleteMany({ clientid: ClientidDecrypted }, function (err) {
       if (err) {
         console.log(err.code);
         ret = {
@@ -91,12 +91,12 @@ router.post("/remove", async function (req, res) {
 
     return res.json({
       status: status.SUCCESS,
-      msg: "Remove device successfully",
+      msg: "Remove client successfully",
     });
   } else {
     return res.json({
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     });
   }
 });
@@ -107,7 +107,7 @@ router.get("/list", async function (req, res) {
 
   let resStt: ResStt = {
     status: status.SUCCESS,
-    msg: "List device successfully",
+    msg: "List client successfully",
     payload: { list: [] },
   };
 
@@ -120,15 +120,15 @@ router.get("/list", async function (req, res) {
     });
   }
 
-  const devices: any = await Device.findAll({
+  const clients: any = await Client.findAll({
     where: { email: payload.email },
     order: [["createdAt", "ASC"]],
   });
 
-  for (let i in devices) {
+  for (let i in clients) {
     resStt.payload.list.push({
-      name: devices[i].name,
-      id: await encryption.encrypt(devices[i].deviceid),
+      name: clients[i].name,
+      id: await encryption.encrypt(clients[i].clientid),
     });
   }
 
@@ -153,16 +153,16 @@ router.post("/settings", async function (req, res) {
     });
   }
 
-  if (req.body.deviceid === "" || req.body.deviceid === undefined || req.body.deviceid === null) {
+  if (req.body.clientid === "" || req.body.clientid === undefined || req.body.clientid === null) {
     return res.json({
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     });
   }
-  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+  const ClientidDecrypted = await encryption.decrypt(req.body.clientid);
 
-  if (validateid(DeviceidDecrypted)) {
-    const device: any = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
+  if (validateid(ClientidDecrypted)) {
+    const client: any = await Client.findOne({ where: { clientid: ClientidDecrypted } });
 
     if (ret.status !== status.SUCCESS) {
       return res.json(ret);
@@ -171,12 +171,12 @@ router.post("/settings", async function (req, res) {
     return res.json({
       status: status.SUCCESS,
       msg: "Load settings successfully",
-      settings: JSON.parse(device.settings),
+      settings: JSON.parse(client.settings),
     });
   } else {
     return res.json({
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     });
   }
 });
@@ -199,23 +199,23 @@ router.post("/savesettings", async function (req, res) {
     });
   }
 
-  if (req.body.deviceid === "" || req.body.deviceid === undefined || req.body.deviceid === null) {
+  if (req.body.clientid === "" || req.body.clientid === undefined || req.body.clientid === null) {
     return res.json({
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     });
   }
-  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+  const ClientidDecrypted = await encryption.decrypt(req.body.clientid);
 
-  if (validateid(DeviceidDecrypted)) {
-    const device: any = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
+  if (validateid(ClientidDecrypted)) {
+    const client: any = await Client.findOne({ where: { clientid: ClientidDecrypted } });
 
     if (ret.status !== status.SUCCESS) {
       return res.json(ret);
     }
 
-    device.settings = JSON.stringify(req.body.settings);
-    await device.save();
+    client.settings = JSON.stringify(req.body.settings);
+    await client.save();
 
     return res.json({
       status: status.SUCCESS,
@@ -224,7 +224,7 @@ router.post("/savesettings", async function (req, res) {
   } else {
     return res.json({
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     });
   }
 });
@@ -247,43 +247,43 @@ router.post("/sendcommand", async function (req, res) {
     });
   }
 
-  var DeviceidDecrypted;
+  var ClientidDecrypted;
   try {
-    DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+    ClientidDecrypted = await encryption.decrypt(req.body.clientid);
   } catch {
     ret = {
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     };
     console.log(ret);
     return res.json(ret);
   }
 
-  let device = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
+  let client = await Client.findOne({ where: { clientid: ClientidDecrypted } });
 
   if (ret.status !== status.SUCCESS) {
     console.log(ret);
     return res.json(ret);
   }
 
-  if (device === null) {
+  if (client === null) {
     ret = {
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     };
     console.log(ret);
     return res.json(ret);
   }
 
-  const wssdata = {
+  const wssData = {
     command: "command",
     type: req.body.command,
   };
-  wssSendMessage.sendDevice(req.body.deviceid, wssdata);
+  wssSendMessage.SendClientWithClientId(req.body.clientid, wssData);
 
   return res.json({
     status: status.SUCCESS,
-    msg: "Send command to device successfully",
+    msg: "Send command to client successfully",
   });
 });
 
@@ -305,44 +305,44 @@ router.post("/sendcommandline", async function (req, res) {
     });
   }
 
-  var DeviceidDecrypted;
+  var ClientidDecrypted;
   try {
-    DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+    ClientidDecrypted = await encryption.decrypt(req.body.clientid);
   } catch {
     ret = {
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     };
     console.log(ret);
     return res.json(ret);
   }
 
-  let device = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
+  let client = await Client.findOne({ where: { clientid: ClientidDecrypted } });
 
   if (ret.status !== status.SUCCESS) {
     console.log(ret);
     return res.json(ret);
   }
 
-  if (device === null) {
+  if (client === null) {
     ret = {
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     };
     console.log(ret);
     return res.json(ret);
   }
 
   console.log("string", req.body.string);
-  const wssdata = {
+  const wssData = {
     command: "commandline",
     string: req.body.string,
   };
-  wssSendMessage.sendDevice(req.body.deviceid, wssdata);
+  wssSendMessage.SendClientWithClientId(req.body.clientid, wssData);
 
   return res.json({
     status: status.SUCCESS,
-    msg: "Send command line to device successfully",
+    msg: "Send command line to client successfully",
   });
 });
 

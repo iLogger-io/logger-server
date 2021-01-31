@@ -1,8 +1,8 @@
 import { Sequelize, DataTypes } from "sequelize";
 
 export = (sequelize: Sequelize) => {
-  var Device = sequelize.define(
-    "devices",
+  var Client = sequelize.define(
+    "clients",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -12,7 +12,7 @@ export = (sequelize: Sequelize) => {
       email: {
         type: DataTypes.STRING(254),
       },
-      deviceid: {
+      clientid: {
         type: DataTypes.STRING(64),
         allowNull: false,
       },
@@ -40,7 +40,7 @@ export = (sequelize: Sequelize) => {
       indexes: [
         {
           unique: true,
-          fields: ["email", "deviceid"],
+          fields: ["email", "clientid"],
         },
         {
           unique: true,
@@ -49,6 +49,6 @@ export = (sequelize: Sequelize) => {
       ],
     },
   );
-  Device.sync({ alter: true });
-  return Device;
+  Client.sync({ alter: true });
+  return Client;
 };

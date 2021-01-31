@@ -1,5 +1,5 @@
 import express from "express";
-import { Device, Log } from "../models/db";
+import { Client, Log } from "../models/db";
 import status from "../constants/status";
 import * as encryption from "../lib/encryption";
 import * as globalVar from "../lib/global_var";
@@ -24,8 +24,8 @@ router.post("/data", async function (req: any, res) {
   const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("Url", Url);
 
-  // const deviceid = Url.substring(Url.indexOf('deviceid=') + 'deviceid='.length, Url.length)
-  const deviceid = req.query.deviceid.replace(/ /g, "+");
+  // const clientid = Url.substring(Url.indexOf('clientid=') + 'clientid='.length, Url.length)
+  const clientid = req.query.clientid.replace(/ /g, "+");
 
   let ret: any = {
     status: status.SUCCESS,
@@ -42,24 +42,24 @@ router.post("/data", async function (req: any, res) {
   //   logs[i] = logs[i].replace(/\\r/g, '')
   // }
 
-  let DeviceidDecrypted: any;
+  let ClientidDecrypted: any;
   try {
-    DeviceidDecrypted = await encryption.decrypt(deviceid);
+    ClientidDecrypted = await encryption.decrypt(clientid);
   } catch {
     ret = {
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     };
     console.log("== ret", ret);
     return res.json(ret);
   }
 
-  let device: any = await Device.findOne({ where: { deviceid: DeviceidDecrypted } });
+  let client: any = await Client.findOne({ where: { clientid: ClientidDecrypted } });
 
-  if (device === null) {
+  if (client === null) {
     ret = {
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     };
     return;
   }
@@ -70,7 +70,7 @@ router.post("/data", async function (req: any, res) {
       continue;
     }
     var log: any = new Log();
-    log.deviceid = device.deviceid;
+    log.clientid = client.clientid;
     log.log = logs[i];
     log.save(async function (err: any, log: any) {
       if (err) {
@@ -89,14 +89,14 @@ router.post("/data", async function (req: any, res) {
   for (const key in globalVar.wssClientStorage) {
     if (
       globalVar.wssClientStorage[key].token !== undefined &&
-      globalVar.wssClientStorage[key].deviceids.includes(DeviceidDecrypted)
+      globalVar.wssClientStorage[key].clientids.includes(ClientidDecrypted)
     ) {
       const newupdate = {
         command: "pushlog",
         db: "logs",
         // _id: log._id,
         // createdAt: log.createdAt,
-        deviceid: req.query.deviceid,
+        clientid: req.query.clientid,
       };
       wss.SendMessageToClient(globalVar.wssClientStorage[key], newupdate);
     }
@@ -121,16 +121,16 @@ router.post("/getlog", async function (req, res) {
     });
   }
 
-  if (req.body.deviceid === "" || req.body.deviceid === undefined || req.body.deviceid === null) {
+  if (req.body.clientid === "" || req.body.clientid === undefined || req.body.clientid === null) {
     return res.json({
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     });
   }
 
-  const DeviceidDecrypted = await encryption.decrypt(req.body.deviceid);
+  const ClientidDecrypted = await encryption.decrypt(req.body.clientid);
   const FindOptions: any = {
-    deviceid: DeviceidDecrypted,
+    clientid: ClientidDecrypted,
   };
 
   if (req.body.gt !== undefined && req.body.gt !== null) {
@@ -141,7 +141,7 @@ router.post("/getlog", async function (req, res) {
     FindOptions._id = { $lt: req.body.lt };
   }
 
-  if (validateid(DeviceidDecrypted)) {
+  if (validateid(ClientidDecrypted)) {
     Log.find(FindOptions, async function (err, logs: any) {
       if (err) {
         console.log(err.code);
@@ -170,7 +170,7 @@ router.post("/getlog", async function (req, res) {
   } else {
     return res.json({
       status: status.UNKNOWN,
-      msg: "Wrong device id",
+      msg: "Wrong client id",
     });
   }
 });
