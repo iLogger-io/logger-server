@@ -70,7 +70,7 @@ router.post("/data", async function (req: any, res) {
       continue;
     }
     var log: any = new Log();
-    log.clientid = client.clientid;
+    log.client_id = client.clientid;
     log.log = logs[i];
     log.save(async function (err: any, log: any) {
       if (err) {
@@ -130,7 +130,7 @@ router.post("/getlog", async function (req, res) {
 
   const ClientidDecrypted = await encryption.decrypt(req.body.clientid);
   const FindOptions: any = {
-    clientid: ClientidDecrypted,
+    client_id: ClientidDecrypted,
   };
 
   if (req.body.gt !== undefined && req.body.gt !== null) {

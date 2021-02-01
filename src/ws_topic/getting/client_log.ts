@@ -7,6 +7,7 @@ import { msleep } from "../../utils/helper";
 import * as mail from "../../utils/mail";
 import * as WssSendMessage from "../../lib/wss_send_message";
 import { WSDataType } from "../../types/index";
+import * as encryption from "../../lib/encryption";
 
 function EventChecking(log: any, TriggerEventSettings: any) {
   for (const key in TriggerEventSettings) {
@@ -155,7 +156,7 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
     topic: "pushlog",
     payload: {
       logId: log._id,
-      ClientId: (ws as any).clientId,
+      ClientId: await encryption.encrypt((ws as any).clientId),
     },
   };
 
