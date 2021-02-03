@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+import { Level } from "../types/enum";
 
-let LogsSchema: any = new mongoose.Schema(
+const LogsSchema: any = new mongoose.Schema(
   {
     client_id: {
       type: String,
@@ -8,6 +9,12 @@ let LogsSchema: any = new mongoose.Schema(
     },
     log: {
       type: String,
+      required: true,
+    },
+    level: {
+      type: String,
+      enum: Object.values(Level),
+      default: Level.NORMAL,
       required: true,
     },
   },

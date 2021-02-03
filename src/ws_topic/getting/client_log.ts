@@ -8,6 +8,7 @@ import * as mail from "../../utils/mail";
 import * as WssSendMessage from "../../lib/wss_send_message";
 import { WSDataType } from "../../types/index";
 import * as encryption from "../../lib/encryption";
+import { Level } from "../../types/enum";
 
 function EventChecking(log: any, TriggerEventSettings: any) {
   for (const key in TriggerEventSettings) {
@@ -100,6 +101,7 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
     var log: any = new Log();
     log.client_id = client.clientid;
     log.log = logs[i];
+    log.level = Level.NORMAL;
     await log.save(async function (err: any, _log: any) {
       if (err) {
         console.log(err.code);

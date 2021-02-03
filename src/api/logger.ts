@@ -157,6 +157,7 @@ router.post("/getlog", async function (req, res) {
           _id: logs[i]._id,
           time: logs[i].createdAt,
           log: logs[i].log,
+          level: logs[i].level,
         });
       }
       return res.json({
