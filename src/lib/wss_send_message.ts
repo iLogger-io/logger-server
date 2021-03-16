@@ -1,7 +1,7 @@
 import * as globalVar from "./global_var";
 import * as wss from "../wss";
 
-export async function SendBrowserWithWsId(WsId: string, WssData: any) {
+export async function SendBrowserByWsId(WsId: string, WssData: any) {
   for (const key in globalVar.wssClientStorage) {
     if (
       globalVar.wssClientStorage[key].user !== undefined &&
@@ -12,7 +12,7 @@ export async function SendBrowserWithWsId(WsId: string, WssData: any) {
   }
 }
 
-export async function SendBrowserWithEmail(email: string, WssData: any) {
+export async function SendBrowserByEmail(email: string, WssData: any) {
   for (const key in globalVar.wssClientStorage) {
     if (
       globalVar.wssClientStorage[key].user !== undefined &&
@@ -23,7 +23,7 @@ export async function SendBrowserWithEmail(email: string, WssData: any) {
   }
 }
 
-export function SendClientWithClientId(ClientId: string, WssData: any) {
+export function SendClientByClientId(ClientId: string, WssData: any) {
   for (const key in globalVar.wssClientStorage) {
     if (
       globalVar.wssClientStorage[key].clientId !== undefined &&

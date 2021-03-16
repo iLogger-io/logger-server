@@ -1,6 +1,7 @@
 import status from "../constants/status";
 import { Notification } from "../models/db";
 import * as wssSendMessage from "./wss_send_message";
+import * as encryption from "../lib/encryption";
 
 export const type = {
   USER: 0,
@@ -10,7 +11,7 @@ export const type = {
   REGEX: 4,
 };
 
-export function save(email: any, type: any, data: any) {
+export function save(userId: string, email: any, type: any, data: any) {
   return new Promise(async (resolve, reject) => {
     let ret: any = {
       status: status.SUCCESS,
@@ -21,6 +22,7 @@ export function save(email: any, type: any, data: any) {
     const notification = new Notification();
     notification.email = email;
     notification.messages = JSON.stringify(data);
+    notification.user_id = userId;
     await notification.save();
 
     ret = {
@@ -44,14 +46,15 @@ export async function push(id: any, clientid: any) {
       status: status.UNKNOWN,
       msg: "id not found",
     };
-    console.log(ret);
     return ret;
   }
   const wssData = {
-    command: "pushNotification",
-    messages: JSON.parse(notification.messages),
-    clientid: clientid,
+    topic: "push_notification",
+    payload: {
+      ClientId: await encryption.encrypt(clientid),
+      messages: JSON.parse(notification.messages),
+    },
   };
-  wssSendMessage.SendBrowserWithEmail(notification.email, wssData);
+  wssSendMessage.SendBrowserByEmail(notification.email, wssData);
   return ret;
 }

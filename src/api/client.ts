@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import status from "../constants/status";
-import { Client, Log } from "../models/db";
+import { User, Client, Log } from "../models/db";
 
 import * as encryption from "../lib/encryption";
 import logger from "../utils/logger";
@@ -23,15 +23,18 @@ router.post("/register", async function (req, res) {
     });
   }
 
+  const user: any = await User.findOne({ where: { email: payload.email } });
+
   const clientid = genid();
 
   const client: any = new Client();
   client.email = payload.email;
   client.clientid = clientid;
   client.name = req.body.name;
+  client.user_id = user.id;
 
   await client.save();
-  const notiRet: any = await notiController.save(payload.email, notiController.type.USER, {
+  const notiRet: any = await notiController.save(user.id, payload.email, notiController.type.USER, {
     msg: "Register client successfully",
   });
   notiController.push(notiRet.id, null);
@@ -75,7 +78,7 @@ router.post("/remove", async function (req, res) {
       return res.json(ret);
     }
 
-    await Log.deleteMany({ clientid: ClientidDecrypted }, function (err) {
+    await Log.deleteMany({ client_id: ClientidDecrypted }, function (err) {
       if (err) {
         console.log(err.code);
         ret = {
@@ -229,6 +232,60 @@ router.post("/savesettings", async function (req, res) {
   }
 });
 
+router.post("/cleanlog", async function (req, res) {
+  const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
+  console.log("Url", Url);
+
+  var ret = {
+    status: status.SUCCESS,
+    msg: "OK",
+  };
+
+  const payload = encryption.verifyToken(process.env.JWT_SECRET!, req);
+  if (payload === null) {
+    return res.json({
+      status: status.ERROR,
+      msg: "Token decode error",
+      code: status.TOKEN_DECODE_ERROR,
+    });
+  }
+
+  if (req.body.clientid === "" || req.body.clientid === undefined || req.body.clientid === null) {
+    return res.json({
+      status: status.UNKNOWN,
+      msg: "Wrong client id",
+    });
+  }
+  const ClientidDecrypted = await encryption.decrypt(req.body.clientid);
+
+  if (validateid(ClientidDecrypted)) {
+    console.log("client_id", ClientidDecrypted);
+    await Log.deleteMany({ client_id: ClientidDecrypted }, function (err) {
+      if (err) {
+        console.log(err.code);
+        ret = {
+          status: status.UNKNOWN,
+          msg: err.message,
+        };
+      }
+    });
+
+    if (ret.status !== status.SUCCESS) {
+      return res.json(ret);
+    }
+
+    return res.json({
+      status: status.SUCCESS,
+      msg: "Clear logs successfully",
+    });
+  } else {
+    return res.json({
+      status: status.UNKNOWN,
+      msg: "Wrong client id",
+    });
+  }
+});
+
 router.post("/sendcommand", async function (req, res) {
   const Url = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("Url", Url);
@@ -279,7 +336,7 @@ router.post("/sendcommand", async function (req, res) {
     command: "command",
     type: req.body.command,
   };
-  wssSendMessage.SendClientWithClientId(req.body.clientid, wssData);
+  wssSendMessage.SendClientByClientId(req.body.clientid, wssData);
 
   return res.json({
     status: status.SUCCESS,
@@ -338,7 +395,7 @@ router.post("/sendcommandline", async function (req, res) {
     command: "commandline",
     string: req.body.string,
   };
-  wssSendMessage.SendClientWithClientId(req.body.clientid, wssData);
+  wssSendMessage.SendClientByClientId(req.body.clientid, wssData);
 
   return res.json({
     status: status.SUCCESS,

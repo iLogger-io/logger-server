@@ -32,6 +32,7 @@ export const Notification = NotificationModel(sequelize);
 export { Log } from "./Log";
 
 User.hasMany(Client, {
+  as: "clients",
   foreignKey: {
     name: "id",
     allowNull: false,
@@ -40,7 +41,10 @@ User.hasMany(Client, {
   hooks: true,
 });
 
+Client.belongsTo(User, { as: "user", foreignKey: "id" });
+
 User.hasMany(Notification, {
+  as: "notifications",
   foreignKey: {
     name: "id",
     allowNull: false,
@@ -48,5 +52,7 @@ User.hasMany(Notification, {
   onDelete: "cascade",
   hooks: true,
 });
+
+Notification.belongsTo(User, { as: "user", foreignKey: "id" });
 
 sequelize.sync({ alter: true });

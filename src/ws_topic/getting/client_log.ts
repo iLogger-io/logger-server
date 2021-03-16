@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import logger from "../../utils/logger";
-import { Client, Log } from "../../models/db";
+import { User, Client, Log } from "../../models/db";
 import * as notiController from "../../lib/notifications";
 import status from "../../constants/status";
 import { msleep } from "../../utils/helper";
@@ -95,7 +95,11 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
     return;
   }
 
-  const client: any = await Client.findOne({ where: { clientid: (ws as any).clientId } });
+  const client: any = await Client.findOne({
+    where: { clientid: (ws as any).clientId },
+    include: [{ model: User, as: "user" }],
+  });
+
   const ClientSettings = JSON.parse(client.settings);
   for (let i in logs) {
     var log: any = new Log();
@@ -134,7 +138,7 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
           type = notiController.type.REGEX;
           break;
       }
-      const notiRet: any = await notiController.save(client.email, type, {
+      const notiRet: any = await notiController.save(client.user.id, client.email, type, {
         msg: `Found ${TriggerEvents.Event}`,
         data: logs[i],
       });
@@ -162,7 +166,7 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
     },
   };
 
-  WssSendMessage.SendBrowserWithEmail(client.email, wssData);
+  WssSendMessage.SendBrowserByEmail(client.email, wssData);
 
   ret = {
     status: status.SUCCESS,

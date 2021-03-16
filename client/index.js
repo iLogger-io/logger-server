@@ -12,7 +12,7 @@ const WebSocket = require("ws");
     const wsMsg = {
       topic: "register_client",
       payload: {
-        clientid: "kyC2L/WTsr/djoXs8elQQkW6YnTZ4a+/dl/a3+RZBceTZBqxUMFOZLIjifiCUUMH",
+        clientid: "kxTZb3kojMsabMu8o1yzrhhlT3TV8J+aC1WYGsdNvLQSQnyxLiLvhX25mli3g8uP",
       },
     };
     ws.send(JSON.stringify(wsMsg));
