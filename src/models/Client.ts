@@ -1,8 +1,8 @@
 import { Sequelize, DataTypes } from "sequelize";
+import { Client } from "../types/db";
 
 export = (sequelize: Sequelize) => {
-  var Client = sequelize.define(
-    "clients",
+  Client.init(
     {
       id: {
         type: DataTypes.INTEGER,
@@ -45,6 +45,8 @@ export = (sequelize: Sequelize) => {
       },
     },
     {
+      sequelize,
+      tableName: "clients",
       indexes: [
         {
           unique: true,

@@ -11,7 +11,7 @@ export const type = {
   REGEX: 4,
 };
 
-export function save(userId: string, email: any, type: any, data: any) {
+export function save(userId: number, email: any, type: any, data: any) {
   return new Promise(async (resolve, reject) => {
     let ret: any = {
       status: status.SUCCESS,
@@ -52,9 +52,9 @@ export async function push(id: any, clientid: any) {
     topic: "push_notification",
     payload: {
       ClientId: await encryption.encrypt(clientid),
-      messages: JSON.parse(notification.messages),
+      messages: JSON.parse(notification.messages!),
     },
   };
-  wssSendMessage.SendBrowserByEmail(notification.email, wssData);
+  wssSendMessage.SendBrowserByEmail(notification.email!, wssData);
   return ret;
 }
