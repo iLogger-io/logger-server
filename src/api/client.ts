@@ -2,6 +2,7 @@ import express from "express";
 const router = express.Router();
 import status from "../constants/status";
 import { User, Client, Log } from "../models/db";
+// import { ClientAttributes, UserAttributes } from "../types/db";
 
 import * as encryption from "../lib/encryption";
 import logger from "../utils/logger";
@@ -22,8 +23,9 @@ router.post("/register", async function (req, res) {
       code: status.TOKEN_DECODE_ERROR,
     });
   }
+  console.log("payload", payload);
 
-  const user: any = await User.findOne({ where: { email: payload.email } });
+  const user = await User.findOne({ where: { email: payload.email } });
 
   const clientid = genid();
 
@@ -31,13 +33,18 @@ router.post("/register", async function (req, res) {
   client.email = payload.email;
   client.clientid = clientid;
   client.name = req.body.name;
-  client.user_id = user.id;
+  client.user_id = user!.id;
 
   await client.save();
-  const notiRet: any = await notiController.save(user.id, payload.email, notiController.type.USER, {
-    msg: "Register client successfully",
-  });
-  notiController.push(notiRet.id, null);
+  const notiRet: any = await notiController.save(
+    user!.id,
+    payload.email,
+    notiController.type.USER,
+    {
+      msg: "Register client successfully",
+    },
+  );
+  notiController.push(notiRet.id, clientid);
   return res.json({
     status: status.SUCCESS,
     msg: "Register client successfully",

@@ -19,7 +19,7 @@ export function save(userId: number, email: any, type: any, data: any) {
     };
 
     data.type = type;
-    const notification = new Notification();
+    const notification: any = new Notification();
     notification.email = email;
     notification.messages = JSON.stringify(data);
     notification.user_id = userId;
@@ -55,6 +55,7 @@ export async function push(id: any, clientid: any) {
       messages: JSON.parse(notification.messages!),
     },
   };
+  console.log("wssData", wssData);
   wssSendMessage.SendBrowserByEmail(notification.email!, wssData);
   return ret;
 }

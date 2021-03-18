@@ -4,6 +4,7 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
+    "local": "env-cmd -f .env.local nodemon --watch 'src/**/*.ts' --exec ts-node src/index.ts",
     "dev": "env-cmd -f .env.development nodemon --watch 'src/**/*.ts' --exec ts-node src/index.ts",
     "staging": "env-cmd -f .env.staging ts-node src/index.ts",
     "prod": "env-cmd -f .env.production ts-node src/index.ts",

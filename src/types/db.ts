@@ -56,7 +56,7 @@ export class Client
   };
 }
 
-interface UserAttributes {
+export interface UserAttributes {
   id: number;
   displayName: string | null;
   givenName: string | null;

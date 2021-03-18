@@ -153,7 +153,7 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
         </ul>`;
         logger.warn("iLogger Notifications");
         logger.warn(TriggerEvents.Event);
-        // mail.send(client.email, "iLogger Notifications", content);
+        mail.send(client.email, "iLogger Notifications", content);
       }
     }
     await msleep(2);
