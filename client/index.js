@@ -7,7 +7,8 @@ node ilogger.js file.log kxTZb3kojMsabMu8o1yzrhhlT3TV8J+aC1WYGsdNvLQSQnyxLiLvhX2
 
 (function main() {
   let checkStartLogFirstTime = false;
-  const ws = new WebSocket("wss://api.ilogger.io");
+  // const ws = new WebSocket("wss://api.ilogger.io");
+  const ws = new WebSocket("ws://localhost:3000");
 
   const filename = process.argv[2];
   const clientId = process.argv[3];

@@ -1,5 +1,14 @@
-import { Sequelize, DataTypes } from "sequelize";
-import { Notification } from "../types/db";
+import { Sequelize, DataTypes, Model } from "sequelize";
+
+class Notification extends Model {
+  public id!: number;
+  public email!: string | null;
+  public messages!: string | null;
+  public user_id!: number;
+
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
 
 export = (sequelize: Sequelize) => {
   Notification.init(

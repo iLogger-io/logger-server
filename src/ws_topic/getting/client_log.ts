@@ -97,7 +97,7 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
 
   const client: any = await Client.findOne({
     where: { clientid: (ws as any).clientId },
-    include: [Client.associations.user],
+    include: [{ model: User, as: "user" }],
   });
 
   const ClientSettings = JSON.parse(client.settings);

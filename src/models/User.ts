@@ -1,6 +1,21 @@
 import crypto from "crypto";
-import { Sequelize, DataTypes } from "sequelize";
-import { User } from "../types/db";
+import { Sequelize, DataTypes, Model } from "sequelize";
+
+class User extends Model {
+  public id!: number;
+  public displayName!: string | null;
+  public givenName!: string | null;
+  public familyName!: string | null;
+  public email!: string;
+  public emailVerified!: boolean | null;
+  public emailVerifiedId!: string | null;
+  public informations!: string | null;
+  public password!: string | null;
+  public salt!: string | null;
+
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
 
 export = (sequelize: Sequelize) => {
   User.init(

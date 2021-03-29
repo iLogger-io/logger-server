@@ -1,5 +1,16 @@
-import { Sequelize, DataTypes } from "sequelize";
-import { Client } from "../types/db";
+import { Sequelize, DataTypes, Model } from "sequelize";
+
+class Client extends Model {
+  public id!: number;
+  public email!: string | null;
+  public clientid!: string;
+  public name!: string;
+  public settings!: string | null;
+  public user_id!: number;
+
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
 
 export = (sequelize: Sequelize) => {
   Client.init(
