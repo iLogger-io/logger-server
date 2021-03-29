@@ -2,7 +2,6 @@ import express from "express";
 const router = express.Router();
 import status from "../constants/status";
 import { User, Client, Log } from "../models/db";
-// import { ClientAttributes, UserAttributes } from "../types/db";
 
 import * as encryption from "../lib/encryption";
 import logger from "../utils/logger";

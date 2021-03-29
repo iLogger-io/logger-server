@@ -68,11 +68,11 @@ router.post("/signup", async function (req: any, res: any) {
   user.emailVerifiedId = emailVerifiedId;
   await user.save();
 
-  // const content = `
-  // <h2 style="color: #2e6c80;">Click on this link to verify your email:</h2>
-  // <p><strong>&nbsp;<a href="${process.env.BASE_URL}/verifyemail?id=${emailVerifiedId}">${process.env.BASE_URL}/verifyemail?id=${emailVerifiedId}</a></strong></p>
-  // `;
-  // mail.send(req.body.email, "iLogger Email Verification", content);
+  const content = `
+  <h2 style="color: #2e6c80;">Click on this link to verify your email:</h2>
+  <p><strong>&nbsp;<a href="${process.env.BASE_URL}/verifyemail?id=${emailVerifiedId}">${process.env.BASE_URL}/verifyemail?id=${emailVerifiedId}</a></strong></p>
+  `;
+  mail.send(req.body.email, "iLogger Email Verification", content);
 
   if (checkuser !== null && checkuser.emailVerified === false) {
     return res.json({
