@@ -26,17 +26,17 @@ passport.use(
   new LocalStrategy(
     { usernameField: "email" },
     async (email: string, password: string, done: any) => {
-      const user: any = await User.findOne({ where: { email: email } });
+      const user: any = await User.findOne({ raw: true, where: { email: email } });
       if (user === null) {
         return done(null, false, { code: status.EMAIL_INVALID, msg: "Incorrect email." });
-      } else if (user.emailVerified === false) {
-        return done(null, false, {
-          message: "Email already exists but has not been verified, please check your mailbox.",
-        });
       } else if (!encryption.validPassword(user.salt, password, user.password)) {
         return done(null, false, { code: status.PASS_NOT_MATCHED, msg: "Incorrect password." });
+      } else if (user.emailVerified === false) {
+        return done(null, false, {
+          msg: "Email already exists but has not been verified, please check your mailbox.",
+        });
       }
-      return done(null, user);
+      return done(user);
     },
   ),
 );

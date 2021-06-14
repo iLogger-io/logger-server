@@ -55,4 +55,7 @@ User.hasMany(Notification, {
 
 Notification.belongsTo(User, { as: "user", foreignKey: "id" });
 
-sequelize.sync({ alter: true });
+sequelize.sync({
+  force: false, // To create table if exists , so make it false
+  alter: false, // To update the table if exists , so make it false
+});

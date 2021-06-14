@@ -147,9 +147,9 @@ export = async function ClientLog(ws: WebSocket, payload: any) {
         const content = `
         <h2 style="padding-left: 30px;">Found&nbsp; ${TriggerEvents.Event}</h2>
         <ul>
-        <li>Client id: ${(ws as any).clientId}</li>
-        <li>log: ${log.log}</li>
+        <li>Client id: ${await encryption.encrypt((ws as any).clientId)}</li>
         <li>datetime: ${log.createdAt}</li>
+        <li>${log.log}</li>
         </ul>`;
         logger.warn("iLogger Notifications");
         logger.warn(TriggerEvents.Event);

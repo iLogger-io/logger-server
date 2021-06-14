@@ -88,11 +88,14 @@ router.post("/signup", async function (req: any, res: any) {
 });
 
 router.post("/login", function (req, res, next) {
-  passport.authenticate("local", { session: false }, function (err, user, info) {
-    if (err) {
-      return next(err);
-    }
-    if (user.emailVerified === false) {
+  passport.authenticate("local", { session: false }, function (user, err, info) {
+    if (user === null) {
+      return res.json({
+        status: status.ERROR,
+        code: status.LOGIN_FAILED,
+        msg: "Wrong email or password",
+      });
+    } else if (user.emailVerified === false) {
       return res.json({
         status: status.ERROR,
         code: status.EMAIL_NOT_VERIFIED,
@@ -116,12 +119,6 @@ router.post("/login", function (req, res, next) {
           access_token: access_token,
           refresh_token: refresh_token,
         },
-      });
-    } else if (user === null) {
-      return res.json({
-        status: status.ERROR,
-        code: status.LOGIN_FAILED,
-        msg: info.message,
       });
     }
   })(req, res, next);
